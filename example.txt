@@ -1,0 +1,1 @@
+time . rungemm.sh 1 10 2

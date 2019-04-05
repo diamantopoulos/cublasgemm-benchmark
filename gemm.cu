@@ -65,7 +65,7 @@ int main(int argc, char ** argv){
   int repeats = 2;
 
   if (argc > 1)
-    max_m_k_n = atoi(argv[1]);
+    max_m_k_n = min_m_k_n = atoi(argv[1]);
   if (argc > 2)
     repeats = atoi(argv[2]);
   int verbose = 1;
