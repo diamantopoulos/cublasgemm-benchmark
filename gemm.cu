@@ -53,7 +53,7 @@ void CPU_fill_rand(float *A, int nr_rows_A, int nr_cols_A) {
 	int a=1;
 
     for(int i = 0; i < nr_rows_A * nr_cols_A; i++){
-		A[i] = (float)rand()/(float)(RAND_MAX/a);
+		A[i] = i;//(float)rand()/(float)(RAND_MAX/a);
 	}
 }
 
@@ -61,8 +61,13 @@ int main(int argc, char ** argv){
 
 
   int min_m_k_n = 2;
-  int max_m_k_n = 4096*4;
+  int max_m_k_n = 4096*4*2;
   int repeats = 2;
+
+  if (argc > 1)
+    max_m_k_n = atoi(argv[1]);
+  if (argc > 2)
+    repeats = atoi(argv[2]);
   int verbose = 1;
 
 #ifndef FP16MM
@@ -90,10 +95,12 @@ int main(int argc, char ** argv){
   float *h_A = (float *)malloc(max_m_k_n * max_m_k_n * sizeof(float));
   float *h_B = (float *)malloc(max_m_k_n * max_m_k_n * sizeof(float));
   float *h_C = (float *)malloc(max_m_k_n * max_m_k_n * sizeof(float));
-  
+  printf("OK 1\n");
+
   CPU_fill_rand(h_A, max_m_k_n, max_m_k_n);
   CPU_fill_rand(h_B, max_m_k_n, max_m_k_n);
   CPU_fill_rand(h_C, max_m_k_n, max_m_k_n);
+  printf("OK 2\n");
 
 #ifndef FP16MM
     // Allocate 3 arrays on GPU
@@ -132,11 +139,12 @@ int main(int argc, char ** argv){
     const __half *beta = &bet;
 	
 #endif
-  
+  printf("OK 3\n");
+
   cudaEvent_t start, stop;
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
-
+  printf("OK 4\n");
   for(int size = min_m_k_n; size <= max_m_k_n; size=size*2){
     double sum = 0.0;
     for(int rep = 0; rep < repeats; rep++){
