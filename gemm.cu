@@ -102,6 +102,11 @@ int main(int argc, char ** argv){
   CPU_fill_rand(h_C, max_m_k_n, max_m_k_n);
   printf("OK 2\n");
 
+  cudaEvent_t start_mem, stop_mem;
+  cudaEventCreate(&start_mem);
+  cudaEventCreate(&stop_mem);
+  cudaEventRecord(start_mem, 0);
+
 #ifndef FP16MM
     // Allocate 3 arrays on GPU
     float *d_A, *d_B, *d_C;
@@ -139,6 +144,17 @@ int main(int argc, char ** argv){
     const __half *beta = &bet;
 	
 #endif
+
+  cudaEventRecord(stop_mem,0);
+  cudaEventSynchronize(stop_mem);
+  assert(!cudaGetLastError());
+
+  float elapsed_mem;
+  cudaEventElapsedTime(&elapsed_mem, start_mem, stop_mem);
+  elapsed_mem /= 1000.0f;
+  double sum_mem = elapsed_mem;
+
+
   printf("OK 3\n");
 
   cudaEvent_t start, stop;
@@ -176,9 +192,31 @@ int main(int argc, char ** argv){
 #else
   cout << "float16: size " 
 #endif
-  << size << " average: " << sum/repeats << " s "<< endl;
+  << size << " average: " << sum/repeats << " s. I/O:" << sum_mem << " s" << endl;
 
   }
+
+ cudaEventCreate(&start_mem);
+ cudaEventCreate(&stop_mem);
+ cudaEventRecord(start_mem, 0);
+#ifndef FP16MM
+ checkCuda(cudaMemcpy(h_A,d_A,max_m_k_n * max_m_k_n * sizeof(float),cudaMemcpyDeviceToHost));
+ checkCuda(cudaMemcpy(h_B,d_B,max_m_k_n * max_m_k_n * sizeof(float),cudaMemcpyDeviceToHost));
+ checkCuda(cudaMemcpy(h_C,d_C,max_m_k_n * max_m_k_n * sizeof(float),cudaMemcpyDeviceToHost));
+#else
+ cerr << "FIXME: not measureing time for FP16MM" << endl;
+ exit(1);
+#endif
+  cudaEventRecord(stop_mem,0);
+  cudaEventSynchronize(stop_mem);
+  assert(!cudaGetLastError());
+  cudaEventElapsedTime(&elapsed_mem, start_mem, stop_mem);
+  elapsed_mem /= 1000.0f;
+  sum_mem += elapsed_mem;
+
+
+ cout << "I/O:" << sum_mem << " s" << endl;
+
 
   //Free GPU memory
   cudaFree(d_A);
