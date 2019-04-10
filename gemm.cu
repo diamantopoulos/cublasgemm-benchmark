@@ -192,7 +192,7 @@ int main(int argc, char ** argv){
 #else
   cout << "float16: size " 
 #endif
-  << size << " average: " << sum/repeats << " s. I/O:" << sum_mem << " s" << endl;
+  << size << " average: " << sum/repeats << " s. ";// I/O:" << sum_mem << " s" << endl;
 
   }
 
